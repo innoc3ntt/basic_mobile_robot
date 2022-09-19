@@ -17,7 +17,6 @@ from launch_ros.actions import LifecycleNode
 def generate_launch_description():
 
     # Set the path to different files and folders.
-    pkg_gazebo_ros = FindPackageShare(package="gazebo_ros").find("gazebo_ros")
     pkg_share = FindPackageShare(package="basic_mobile_robot").find(
         "basic_mobile_robot"
     )
@@ -25,15 +24,13 @@ def generate_launch_description():
     robot_localization_file_path = os.path.join(pkg_share, "config/ekf_gps_2.yaml")
     default_rviz_config_path = os.path.join(pkg_share, "rviz/nav2_config.rviz")
     world_file_name = "basic_mobile_bot_world/smalltown.world"
-    world_path = os.path.join(pkg_share, "worlds", world_file_name)
     nav2_dir = FindPackageShare(package="nav2_bringup").find("nav2_bringup")
     nav2_launch_dir = os.path.join(nav2_dir, "launch")
-    static_map_path = os.path.join(pkg_share, "maps", "test.yaml")
+    static_map_path = os.path.join(pkg_share, "maps", "ezoneguild.yaml")
     nav2_params_path = os.path.join(pkg_share, "params", "nav2_params.yaml")
 
     # Launch configuration variables specific to simulation
     autostart = LaunchConfiguration("autostart")
-    headless = LaunchConfiguration("headless")
     map_yaml_file = LaunchConfiguration("map")
     model = LaunchConfiguration("model")
     namespace = LaunchConfiguration("namespace")
@@ -44,8 +41,6 @@ def generate_launch_description():
     use_robot_state_pub = LaunchConfiguration("use_robot_state_pub")
     use_rviz = LaunchConfiguration("use_rviz")
     use_sim_time = LaunchConfiguration("use_sim_time")
-    use_simulator = LaunchConfiguration("use_simulator")
-    world = LaunchConfiguration("world")
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -96,12 +91,6 @@ def generate_launch_description():
         description="Full path to the RVIZ config file to use",
     )
 
-    declare_simulator_cmd = DeclareLaunchArgument(
-        name="headless",
-        default_value="False",
-        description="Whether to execute gzclient",
-    )
-
     declare_slam_cmd = DeclareLaunchArgument(
         name="slam", default_value="False", description="Whether to run SLAM"
     )
@@ -122,38 +111,9 @@ def generate_launch_description():
         description="Use simulation (Gazebo) clock if true",
     )
 
-    declare_use_simulator_cmd = DeclareLaunchArgument(
-        name="use_simulator",
-        default_value="True",
-        description="Whether to start the simulator",
-    )
+    # ! START NAV2 BRINGUP
 
-    declare_world_cmd = DeclareLaunchArgument(
-        name="world",
-        default_value=world_path,
-        description="Full path to the world model file to load",
-    )
-
-    # Specify the actions
-
-    # Start Gazebo server
-    start_gazebo_server_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, "launch", "gzserver.launch.py")
-        ),
-        condition=IfCondition(use_simulator),
-        launch_arguments={"world": world}.items(),
-    )
-
-    # Start Gazebo client
-    start_gazebo_client_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, "launch", "gzclient.launch.py")
-        ),
-        condition=IfCondition(PythonExpression([use_simulator, " and not ", headless])),
-    )
-
-    map_server_name = "map_server"
+    map_server_name = "gps_map_server"
 
     start_map_server_cmd = LifecycleNode(
         package="nav2_map_server",
@@ -175,6 +135,8 @@ def generate_launch_description():
             {"node_names": [map_server_name]},
         ],
     )
+
+    # ! END NAV2 BRINGUP
 
     # Start robot localization using an Extended Kalman filter
     start_robot_localization_cmd = Node(
@@ -211,7 +173,7 @@ def generate_launch_description():
         arguments=["-d", rviz_config_file],
     )
 
-    # ! Launch the ROS 2 Navigation Stack
+    # Launch the ROS 2 Navigation Stack
     start_ros2_navigation_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(nav2_launch_dir, "navigation_launch.py")
@@ -279,18 +241,16 @@ def generate_launch_description():
     ld.add_action(declare_model_path_cmd)
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_rviz_config_file_cmd)
-    ld.add_action(declare_simulator_cmd)
     ld.add_action(declare_slam_cmd)
     ld.add_action(declare_use_robot_state_pub_cmd)
     ld.add_action(declare_use_rviz_cmd)
     ld.add_action(declare_use_sim_time_cmd)
-    ld.add_action(declare_use_simulator_cmd)
-    ld.add_action(declare_world_cmd)
+    # ld.add_action(declare_world_cmd)
 
     # Add any actions
 
-    ld.add_action(start_gazebo_server_cmd)
-    ld.add_action(start_gazebo_client_cmd)
+    # ld.add_action(start_gazebo_server_cmd)
+    # ld.add_action(start_gazebo_client_cmd)
     ld.add_action(start_robot_localization_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_rviz_cmd)
