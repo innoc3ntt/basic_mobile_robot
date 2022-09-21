@@ -176,15 +176,6 @@ def generate_launch_description():
         ],
     )
 
-    # Start robot localization using an Extended Kalman filter
-    start_robot_localization_cmd = Node(
-        package="robot_localization",
-        executable="ekf_node",
-        name="ekf_filter_node",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-    )
-
     # Subscribe to the joint states of the robot, and publish the 3D pose of each link.
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),
@@ -226,6 +217,8 @@ def generate_launch_description():
             "autostart": autostart,
         }.items(),
     )
+
+    # ! Launch robot_localization nodes
 
     start_navsat_transform_cmd = Node(
         package="robot_localization",
@@ -291,7 +284,6 @@ def generate_launch_description():
 
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
-    ld.add_action(start_robot_localization_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_rviz_cmd)
     ld.add_action(start_ros2_navigation_cmd)
