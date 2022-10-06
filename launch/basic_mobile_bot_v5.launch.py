@@ -215,51 +215,52 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             "params_file": params_file,
             "autostart": autostart,
+            "params_file": params_file,
         }.items(),
     )
 
     # ! Launch robot_localization nodes
 
-    start_navsat_transform_cmd = Node(
-        package="robot_localization",
-        executable="navsat_transform_node",
-        name="navsat_transform",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-        remappings=[
-            ("imu", "imu/data"),
-            ("gps/fix", "gps/fix"),
-            ("gps/filtered", "gps/filtered"),
-            ("odometry/gps", "odometry/gps"),
-            ("odometry/filtered", "odometry/global"),
-        ],
-    )
+    # start_navsat_transform_cmd = Node(
+    #     package="robot_localization",
+    #     executable="navsat_transform_node",
+    #     name="navsat_transform",
+    #     output="screen",
+    #     parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
+    #     remappings=[
+    #         ("imu", "imu/data"),
+    #         ("gps/fix", "gps/fix"),
+    #         ("gps/filtered", "gps/filtered"),
+    #         ("odometry/gps", "odometry/gps"),
+    #         ("odometry/filtered", "odometry/global"),
+    #     ],
+    # )
 
-    # Start robot localization using an Extended Kalman filter...map->odom transform
-    start_robot_localization_global_cmd = Node(
-        package="robot_localization",
-        executable="ekf_node",
-        name="ekf_filter_node_map",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-        remappings=[
-            ("odometry/filtered", "odometry/global"),
-            ("/set_pose", "/initialpose"),
-        ],
-    )
+    # # Start robot localization using an Extended Kalman filter...map->odom transform
+    # start_robot_localization_global_cmd = Node(
+    #     package="robot_localization",
+    #     executable="ekf_node",
+    #     name="ekf_filter_node_map",
+    #     output="screen",
+    #     parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
+    #     remappings=[
+    #         ("odometry/filtered", "odometry/global"),
+    #         ("/set_pose", "/initialpose"),
+    #     ],
+    # )
 
-    # Start robot localization using an Extended Kalman filter...odom->base_footprint transform
-    start_robot_localization_local_cmd = Node(
-        package="robot_localization",
-        executable="ekf_node",
-        name="ekf_filter_node_odom",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-        remappings=[
-            ("odometry/filtered", "odometry/local"),
-            ("/set_pose", "/initialpose"),
-        ],
-    )
+    # # Start robot localization using an Extended Kalman filter...odom->base_footprint transform
+    # start_robot_localization_local_cmd = Node(
+    #     package="robot_localization",
+    #     executable="ekf_node",
+    #     name="ekf_filter_node_odom",
+    #     output="screen",
+    #     parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
+    #     remappings=[
+    #         ("odometry/filtered", "odometry/local"),
+    #         ("/set_pose", "/initialpose"),
+    #     ],
+    # )
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -288,9 +289,9 @@ def generate_launch_description():
     ld.add_action(start_rviz_cmd)
     ld.add_action(start_ros2_navigation_cmd)
 
-    ld.add_action(start_navsat_transform_cmd)
-    ld.add_action(start_robot_localization_global_cmd)
-    ld.add_action(start_robot_localization_local_cmd)
+    # ld.add_action(start_navsat_transform_cmd)
+    # ld.add_action(start_robot_localization_global_cmd)
+    # ld.add_action(start_robot_localization_local_cmd)
 
     ld.add_action(start_map_server_cmd)
     ld.add_action(map_server_lifecycle)
