@@ -288,10 +288,10 @@ def generate_launch_description():
     ld.add_action(start_rviz_cmd)
     ld.add_action(start_ros2_navigation_cmd)
 
-    ld.add_action(start_navsat_transform_cmd)
-    ld.add_action(start_robot_localization_global_cmd)
-    ld.add_action(start_robot_localization_local_cmd)
+    # ld.add_action(start_navsat_transform_cmd)
+    # ld.add_action(start_robot_localization_global_cmd)
+    # ld.add_action(start_robot_localization_local_cmd)
 
-    ld.add_action(start_map_server_cmd)
-    ld.add_action(map_server_lifecycle)
+    # ld.add_action(start_map_server_cmd)
+    # ld.add_action(map_server_lifecycle)
     return ld
