@@ -17,16 +17,17 @@ from launch_ros.actions import LifecycleNode
 def generate_launch_description():
 
     # Set the path to different files and folders.
+    nav2_dir = FindPackageShare(package="nav2_bringup").find("nav2_bringup")
     pkg_gazebo_ros = FindPackageShare(package="gazebo_ros").find("gazebo_ros")
     pkg_share = FindPackageShare(package="basic_mobile_robot").find(
         "basic_mobile_robot"
     )
+
     default_model_path = os.path.join(pkg_share, "models/basic_mobile_bot_v2.urdf")
-    robot_localization_file_path = os.path.join(pkg_share, "config/ekf_gps_2.yaml")
     default_rviz_config_path = os.path.join(pkg_share, "rviz/nav2_config.rviz")
     world_file_name = "basic_mobile_bot_world/smalltown.world"
     world_path = os.path.join(pkg_share, "worlds", world_file_name)
-    nav2_dir = FindPackageShare(package="nav2_bringup").find("nav2_bringup")
+
     nav2_launch_dir = os.path.join(nav2_dir, "launch")
     static_map_path = os.path.join(pkg_share, "maps", "test.yaml")
     nav2_params_path = os.path.join(pkg_share, "params", "nav2_params.yaml")
@@ -153,29 +154,6 @@ def generate_launch_description():
         condition=IfCondition(PythonExpression([use_simulator, " and not ", headless])),
     )
 
-    map_server_name = "map_server"
-
-    start_map_server_cmd = LifecycleNode(
-        package="nav2_map_server",
-        executable="map_server",
-        name=map_server_name,
-        namespace="",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}, {"yaml_filename": map_yaml_file}],
-    )
-
-    map_server_lifecycle = Node(
-        package="nav2_lifecycle_manager",
-        executable="lifecycle_manager",
-        name="lifecycle_manager_gps_waypoint_follower",
-        output="screen",
-        parameters=[
-            {"use_sim_time": use_sim_time},
-            {"autostart": autostart},
-            {"node_names": [map_server_name]},
-        ],
-    )
-
     # Subscribe to the joint states of the robot, and publish the 3D pose of each link.
     start_robot_state_publisher_cmd = Node(
         condition=IfCondition(use_robot_state_pub),
@@ -211,54 +189,11 @@ def generate_launch_description():
             "namespace": namespace,
             "use_namespace": use_namespace,
             "slam": slam,
-            "map": map_yaml_file,
+            # "map": map_yaml_file, # ! only valid for localization launch in nav2 bringup
             "use_sim_time": use_sim_time,
             "params_file": params_file,
             "autostart": autostart,
         }.items(),
-    )
-
-    # ! Launch robot_localization nodes
-
-    start_navsat_transform_cmd = Node(
-        package="robot_localization",
-        executable="navsat_transform_node",
-        name="navsat_transform",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-        remappings=[
-            ("imu", "imu/data"),
-            ("gps/fix", "gps/fix"),
-            ("gps/filtered", "gps/filtered"),
-            ("odometry/gps", "odometry/gps"),
-            ("odometry/filtered", "odometry/global"),
-        ],
-    )
-
-    # Start robot localization using an Extended Kalman filter...map->odom transform
-    start_robot_localization_global_cmd = Node(
-        package="robot_localization",
-        executable="ekf_node",
-        name="ekf_filter_node_map",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-        remappings=[
-            ("odometry/filtered", "odometry/global"),
-            ("/set_pose", "/initialpose"),
-        ],
-    )
-
-    # Start robot localization using an Extended Kalman filter...odom->base_footprint transform
-    start_robot_localization_local_cmd = Node(
-        package="robot_localization",
-        executable="ekf_node",
-        name="ekf_filter_node_odom",
-        output="screen",
-        parameters=[robot_localization_file_path, {"use_sim_time": use_sim_time}],
-        remappings=[
-            ("odometry/filtered", "odometry/local"),
-            ("/set_pose", "/initialpose"),
-        ],
     )
 
     # Create the launch description and populate
@@ -281,17 +216,9 @@ def generate_launch_description():
     ld.add_action(declare_world_cmd)
 
     # Add any actions
-
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_rviz_cmd)
     ld.add_action(start_ros2_navigation_cmd)
-
-    # ld.add_action(start_navsat_transform_cmd)
-    # ld.add_action(start_robot_localization_global_cmd)
-    # ld.add_action(start_robot_localization_local_cmd)
-
-    # ld.add_action(start_map_server_cmd)
-    # ld.add_action(map_server_lifecycle)
     return ld
