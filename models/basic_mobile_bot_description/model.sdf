@@ -146,7 +146,7 @@
   </link>
 
   <!-- ****************************** LIDAR *****************************    -->
-  <!-- <link name="lidar_link">    
+  <link name="lidar_link">    
     <inertial>
       <pose>0.215 0 0.13 0 0 0</pose>
       <inertia>
@@ -219,7 +219,7 @@
         <frame_name>lidar_link</frame_name>
       </plugin>
     </sensor>
-  </link> -->
+  </link>
   
   <!-- *********************** DRIVE WHEELS ******************************  -->
   <link name="drivewhl_l_link">
