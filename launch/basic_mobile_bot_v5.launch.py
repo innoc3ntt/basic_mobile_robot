@@ -10,27 +10,15 @@ from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-from launch_ros.actions import LifecycleNode
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
 
     # Set the path to different files and folders.
-    nav2_dir = FindPackageShare(package="nav2_bringup").find("nav2_bringup")
-    pkg_gazebo_ros = FindPackageShare(package="gazebo_ros").find("gazebo_ros")
-    pkg_share = FindPackageShare(package="basic_mobile_robot").find(
-        "basic_mobile_robot"
-    )
-
-    default_model_path = os.path.join(pkg_share, "models/basic_mobile_bot_v2.urdf")
-    default_rviz_config_path = os.path.join(pkg_share, "rviz/nav2_config.rviz")
-    world_file_name = "basic_mobile_bot_world/smalltown.world"
-    world_path = os.path.join(pkg_share, "worlds", world_file_name)
-
-    nav2_launch_dir = os.path.join(nav2_dir, "launch")
-    static_map_path = os.path.join(pkg_share, "maps", "test.yaml")
-    nav2_params_path = os.path.join(pkg_share, "params", "nav2_params.yaml")
+    nav2_dir = get_package_share_directory("nav2_bringup")
+    pkg_gazebo_ros = get_package_share_directory("gazebo_ros")
+    pkg_share = get_package_share_directory("basic_mobile_robot")
 
     # Launch configuration variables specific to simulation
     autostart = LaunchConfiguration("autostart")
@@ -75,25 +63,25 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         name="map",
-        default_value=static_map_path,
+        default_value=os.path.join(pkg_share, "maps", "smalltown_world.yaml"),
         description="Full path to map file to load",
     )
 
     declare_model_path_cmd = DeclareLaunchArgument(
         name="model",
-        default_value=default_model_path,
+        default_value=os.path.join(pkg_share, "models/basic_mobile_bot_v2.urdf"),
         description="Absolute path to robot urdf file",
     )
 
     declare_params_file_cmd = DeclareLaunchArgument(
         name="params_file",
-        default_value=nav2_params_path,
+        default_value=os.path.join(pkg_share, "params/nav2_params.yaml"),
         description="Full path to the ROS2 parameters file to use for all launched nodes",
     )
 
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
         name="rviz_config_file",
-        default_value=default_rviz_config_path,
+        default_value=os.path.join(pkg_share, "rviz/nav2_config.rviz"),
         description="Full path to the RVIZ config file to use",
     )
 
@@ -131,11 +119,9 @@ def generate_launch_description():
 
     declare_world_cmd = DeclareLaunchArgument(
         name="world",
-        default_value=world_path,
+        default_value=os.path.join(pkg_share, "worlds/smalltown.world"),
         description="Full path to the world model file to load",
     )
-
-    # Specify the actions
 
     # Start Gazebo server
     start_gazebo_server_cmd = IncludeLaunchDescription(
@@ -167,7 +153,7 @@ def generate_launch_description():
             }
         ],
         remappings=remappings,
-        arguments=[default_model_path],
+        arguments=[os.path.join(pkg_share, "models/basic_mobile_bot_v2.urdf")],
     )
 
     # Launch RViz
@@ -180,16 +166,15 @@ def generate_launch_description():
         arguments=["-d", rviz_config_file],
     )
 
-    # ! Launch the ROS 2 Navigation Stack
     start_ros2_navigation_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(nav2_launch_dir, "navigation_launch.py")
+            os.path.join(nav2_dir, "launch/bringup_launch.py")
         ),
         launch_arguments={
             "namespace": namespace,
             "use_namespace": use_namespace,
             "slam": slam,
-            # "map": map_yaml_file, # ! only valid for localization launch in nav2 bringup
+            "map": map_yaml_file,
             "use_sim_time": use_sim_time,
             "params_file": params_file,
             "autostart": autostart,
