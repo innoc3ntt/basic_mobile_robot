@@ -1,6 +1,5 @@
 amcl:
   ros__parameters:
-    use_sim_time: True
     alpha1: 0.002
     alpha2: 0.002
     alpha3: 0.002
@@ -12,7 +11,7 @@ amcl:
     beam_skip_threshold: 0.3
     do_beamskip: false
     global_frame_id: map
-    initial_pose: [0.0, 0.0, 0.0, 0.0]
+    # initial_pose: [0.0, 0.0, 0.0, 0.0]
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
     laser_max_range: 100.0
@@ -40,14 +39,6 @@ amcl:
     z_rand: 0.5
     z_short: 0.05
     scan_topic: scan
-
-amcl_map_client:
-  ros__parameters:
-    use_sim_time: True
-
-amcl_rclcpp_node:
-  ros__parameters:
-    use_sim_time: True
 
 bt_navigator:
   ros__parameters:
@@ -96,10 +87,6 @@ bt_navigator:
     - nav2_planner_selector_bt_node
     - nav2_controller_selector_bt_node
     - nav2_goal_checker_selector_bt_node
-
-bt_navigator_rclcpp_node:
-  ros__parameters:
-    use_sim_time: True
 
 controller_server:
   ros__parameters:
@@ -173,10 +160,6 @@ controller_server:
 
       goal_dist_tol: 1.0
 
-controller_server_rclcpp_node:
-  ros__parameters:
-    use_sim_time: True
-
 local_costmap:
   local_costmap:
     ros__parameters:
@@ -217,12 +200,6 @@ local_costmap:
         enabled: true
         subscribe_to_updates: true
         transform_tolerance: 3.0 # tolerance in time
-  local_costmap_client:
-    ros__parameters:
-      use_sim_time: True
-  local_costmap_rclcpp_node:
-    ros__parameters:
-      use_sim_time: True
 
 global_costmap:
   global_costmap:
@@ -236,10 +213,10 @@ global_costmap:
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
-      obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"
-        enabled: True
-        observation_sources: scan
+      # obstacle_layer:
+      #   plugin: "nav2_costmap_2d::ObstacleLayer"
+      #   enabled: True
+      #   observation_sources: scan
         # scan:
         #   topic: /scan
         #   max_obstacle_height: 2.0
@@ -258,21 +235,13 @@ global_costmap:
         cost_scaling_factor: 3.0
         inflation_radius: 0.95
       always_send_full_costmap: True
-  global_costmap_client:
-    ros__parameters:
-      use_sim_time: True
-  global_costmap_rclcpp_node:
-    ros__parameters:
-      use_sim_time: True
 
 map_server:
   ros__parameters:
-    use_sim_time: True
-    yaml_filename: "smalltown_world.yaml"
+    yaml_filename: ""
 
 map_saver:
   ros__parameters:
-    use_sim_time: True
     save_map_timeout: 5.0
     free_thresh_default: 0.25
     occupied_thresh_default: 0.65
@@ -281,7 +250,6 @@ map_saver:
 planner_server:
   ros__parameters:
     expected_planner_frequency: 2.0
-    use_sim_time: True
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
@@ -289,34 +257,29 @@ planner_server:
       use_astar: false
       allow_unknown: true
 
-planner_server_rclcpp_node:
+behavior_server:
   ros__parameters:
-    use_sim_time: True
-
-# recoveries_server:
-#   ros__parameters:
-#     costmap_topic: local_costmap/costmap_raw
-#     footprint_topic: local_costmap/published_footprint
-#     cycle_frequency: 10.0
-#     recovery_plugins: ["spin", "backup", "wait"]
-#     spin:
-#       plugin: "nav2_recoveries/Spin"
-#     backup:
-#       plugin: "nav2_recoveries/BackUp"
-#     wait:
-#       plugin: "nav2_recoveries/Wait"
-#     global_frame: odom
-#     robot_base_frame: base_link
-#     transform_timeout: 0.1
-#     use_sim_time: true
-#     simulate_ahead_time: 2.0
-#     max_rotational_vel: 1.0
-#     min_rotational_vel: 0.4
-#     rotational_acc_lim: 3.2
-
-robot_state_publisher:
-  ros__parameters:
-    use_sim_time: True
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors/AssistedTeleop"
+    global_frame: odom
+    robot_base_frame: base_link
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
     
 waypoint_follower:
   ros__parameters:
@@ -342,7 +305,7 @@ slam_toolbox:
     # ROS Parameters
     odom_frame: odom
     map_frame: map
-    base_frame: base_link
+    base_frame: base_footprint
     scan_topic: /scan
     mode: mapping #localization
 
