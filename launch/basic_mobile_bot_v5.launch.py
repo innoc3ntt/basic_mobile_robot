@@ -5,7 +5,11 @@
 
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    ExecuteProcess,
+)
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PythonExpression
@@ -16,8 +20,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
 
     # Set the path to different files and folders.
-    nav2_dir = get_package_share_directory("nav2_bringup")
-    pkg_gazebo_ros = get_package_share_directory("gazebo_ros")
+    # pkg_gazebo_ros = get_package_share_directory("gazebo_ros")
     pkg_share = get_package_share_directory("basic_mobile_robot")
 
     # Launch configuration variables specific to simulation
@@ -36,6 +39,7 @@ def generate_launch_description():
     use_simulator = LaunchConfiguration("use_simulator")
     world = LaunchConfiguration("world")
 
+    launch_dir = os.path.join(pkg_share, "launch")
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
     # https://github.com/ros/geometry2/issues/32
@@ -43,7 +47,8 @@ def generate_launch_description():
     # TODO(orduno) Substitute with `PushNodeRemapping`
     #              https://github.com/ros2/launch_ros/issues/56
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
-
+    pose = {"x": 12, "y": 12, "z": 0, "r": 0, "p": 0, "y": 0}
+    robot_name = "waffle"
     # Declare the launch arguments
 
     return LaunchDescription(
@@ -116,21 +121,50 @@ def generate_launch_description():
                 default_value=os.path.join(pkg_share, "maps/smalltown_world.yaml"),
                 description="Full path to map file to load",
             ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    os.path.join(pkg_gazebo_ros, "launch", "gzserver.launch.py")
-                ),
+            ExecuteProcess(
                 condition=IfCondition(use_simulator),
-                launch_arguments={"world": world}.items(),
+                cmd=[
+                    "gzserver",
+                    "-s",
+                    "libgazebo_ros_init.so",
+                    "-s",
+                    "libgazebo_ros_factory.so",
+                    world,
+                ],
+                cwd=[launch_dir],
+                output="screen",
             ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    os.path.join(pkg_gazebo_ros, "launch", "gzclient.launch.py")
-                ),
+            ExecuteProcess(
                 condition=IfCondition(
                     PythonExpression([use_simulator, " and not ", headless])
                 ),
+                cmd=["gzclient"],
+                cwd=[launch_dir],
+                output="screen",
             ),
+            # Node(
+            #     package="gazebo_ros",
+            #     executable="spawn_entity.py",
+            #     output="screen",
+            #     arguments=[
+            #         "-entity",
+            #         robot_name,
+            #         "-file",
+            #         robot_sdf,
+            #         "-x",
+            #         pose["x"],
+            #         "-y",
+            #         pose["y"],
+            #         "-z",
+            #         pose["z"],
+            #         "-R",
+            #         pose["R"],
+            #         "-P",
+            #         pose["P"],
+            #         "-Y",
+            #         pose["Y"],
+            #     ],
+            # ),
             Node(
                 condition=IfCondition(use_robot_state_pub),
                 package="robot_state_publisher",
@@ -149,12 +183,12 @@ def generate_launch_description():
                 package="rviz2",
                 executable="rviz2",
                 name="rviz2",
-                output="screen",
+                output="log",
                 arguments=["-d", rviz_config_file],
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
-                    os.path.join(nav2_dir, "launch/bringup_launch.py")
+                    os.path.join(pkg_share, "launch/nav2_launch.py")
                 ),
                 launch_arguments={
                     "namespace": namespace,
@@ -164,6 +198,7 @@ def generate_launch_description():
                     "use_sim_time": use_sim_time,
                     "params_file": params_file,
                     "autostart": autostart,
+                    "use_composition": "False",
                 }.items(),
             ),
         ]
