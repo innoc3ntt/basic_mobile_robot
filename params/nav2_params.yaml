@@ -42,199 +42,60 @@ amcl:
 
 bt_navigator:
   ros__parameters:
-    use_sim_time: True
+    # default_nav_to_pose_bt_xml: /workspaces/humble_nuway_ros2_ws/navigate_w_replanning_only_if_goal_is_updated.xml
+    # default_nav_through_poses_bt_xml: /workspaces/humble_nuway_ros2_ws/navigate_w_replanning_only_if_goal_is_updated.xml
+    # default_nav_to_pose_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_to_pose_w_replanning_and_recovery.xml
+    # default_nav_through_poses_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_to_pose_w_replanning_and_recovery.xml
+    # default_nav_to_pose_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_w_replanning_only_if_goal_is_updated.xml
+    default_nav_to_pose_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_w_recovery_and_replanning_only_if_path_becomes_invalid.xml
+    # default_nav_through_poses_bt_xml: /home/timothy/Downloads/navigate_to_pose_w_replanning_goal_patience_and_recovery.xml
+    transform_tolerance: 1.0
     global_frame: map
-    robot_base_frame: base_footprint
-    odom_topic: wheel/odometry
+    robot_base_frame: base_link
+    odom_topic: odometry/local
     bt_loop_duration: 10
     default_server_timeout: 20
-    enable_groot_monitoring: True
-    groot_zmq_publisher_port: 1666
-    groot_zmq_server_port: 1667
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # default_nav_through_poses_bt_xml: /home/timothy/Downloads/navigate_to_pose_w_replanning_goal_patience_and_recovery.xml
-    # default_nav_to_pose_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_w_replanning_only_if_goal_is_updated.xml
-    # default_nav_to_pose_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_to_pose_w_replanning_goal_patience_and_recovery.xml
-    default_nav_to_pose_bt_xml: /workspaces/nUWAy_ros2_ws/navigate_to_pose_w_replanning_and_recovery.xml
-    # default_nav_through_poses_bt_xml: navigate_w_replanning_time.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
     plugin_lib_names:
+      - nav2_is_path_valid_condition_bt_node
       - nav2_compute_path_to_pose_action_bt_node
-      - nav2_compute_path_through_poses_action_bt_node
       - nav2_follow_path_action_bt_node
       - nav2_back_up_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
       - nav2_spin_action_bt_node
       - nav2_wait_action_bt_node
       - nav2_clear_costmap_service_bt_node
       - nav2_is_stuck_condition_bt_node
       - nav2_goal_reached_condition_bt_node
-      - nav2_goal_updated_condition_bt_node
-      - nav2_goal_updated_controller_bt_node
+      - nav2_globally_updated_goal_condition_bt_node
       - nav2_initial_pose_received_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
       - nav2_reinitialize_global_localization_service_bt_node
       - nav2_rate_controller_bt_node
+      - nav2_smoother_selector_bt_node
       - nav2_distance_controller_bt_node
+      - nav2_goal_updated_controller_bt_node
       - nav2_speed_controller_bt_node
-      - nav2_truncate_path_action_bt_node
-      - nav2_goal_updater_node_bt_node
       - nav2_recovery_node_bt_node
+      - nav2_smooth_path_action_bt_node
       - nav2_pipeline_sequence_bt_node
       - nav2_round_robin_node_bt_node
       - nav2_transform_available_condition_bt_node
       - nav2_time_expired_condition_bt_node
       - nav2_distance_traveled_condition_bt_node
       - nav2_single_trigger_bt_node
-      - nav2_is_battery_low_condition_bt_node
-      - nav2_navigate_through_poses_action_bt_node
-      - nav2_navigate_to_pose_action_bt_node
-      - nav2_remove_passed_goals_action_bt_node
-      - nav2_planner_selector_bt_node
-      - nav2_controller_selector_bt_node
-      - nav2_goal_checker_selector_bt_node
     error_code_names:
       - compute_path_error_code
       - follow_path_error_code
-# controller_server:
-#   ros__parameters:
-#     min_x_velocity_threshold: 0.001
-#     min_y_velocity_threshold: 0.5
-#     min_theta_velocity_threshold: 0.001
-#     failure_tolerance: 0.3
-#     progress_checker_plugin: "progress_checker"
-#     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
-
-#     # Progress checker parameters
-#     progress_checker:
-#       plugin: "nav2_controller::SimpleProgressChecker"
-#       required_movement_radius: 0.5
-#       movement_time_allowance: 10.0
-#     # Goal checker parameters
-#     #precise_goal_checker:
-#     #  plugin: "nav2_controller::SimpleGoalChecker"
-#     #  xy_goal_tolerance: 0.25
-#     #  yaw_goal_tolerance: 0.25
-#     #  stateful: True
-#     general_goal_checker:
-#       plugin: "nav2_controller::SimpleGoalChecker"
-#       stateful: True
-#       xy_goal_tolerance: 2.0
-#       yaw_goal_tolerance: 2.0
-#     odom_topic: /odom
-#     use_sim_time: True
-#     controller_frequency: 5.0
-#     controller_plugin_types: ["teb_local_planner::TebLocalPlannerROS"]
-#     controller_plugins: ["FollowPath"]
-#     FollowPath:
-#       plugin: teb_local_planner::TebLocalPlannerROS
-
-#       teb_autosize: 1.0
-#       dt_ref: 0.3
-#       dt_hysteresis: 0.1
-#       max_samples: 500
-#       global_plan_overwrite_orientation: False
-#       allow_init_with_backwards_motion: False
-#       max_global_plan_lookahead_dist: 3.0
-#       global_plan_viapoint_sep: 0.3
-#       global_plan_prune_distance: 1.0
-#       exact_arc_length: False
-#       feasibility_check_no_poses: 2
-#       publish_feedback: False
-
-#       # Robot
-
-#       max_vel_x: 0.26
-#       max_vel_theta: 1.0
-#       acc_lim_x: 2.5
-#       acc_lim_theta: 3.2
-
-#       footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
-#         type: "circular"
-#         radius: 0.17 # for type "circular"
-
-#       # GoalTolerance
-
-#       free_goal_vel: False
-
-#       # Obstacles
-
-#       min_obstacle_dist: 1.5
-#       inflation_dist: 1.0
-#       include_costmap_obstacles: True
-#       costmap_obstacles_behind_robot_dist: 1.0
-#       obstacle_poses_affected: 15
-
-#       dynamic_obstacle_inflation_dist: 0.6
-#       include_dynamic_obstacles: True
-
-#       costmap_converter_plugin: "costmap_converter::CostmapToPolygonsDBSMCCH"
-#       costmap_converter_spin_thread: True
-#       costmap_converter_rate: 5
-
-#       # Optimization
-
-#       no_inner_iterations: 5
-#       no_outer_iterations: 4
-#       optimization_activate: True
-#       optimization_verbose: False
-#       penalty_epsilon: 0.1
-#       obstacle_cost_exponent: 4.0
-#       weight_max_vel_x: 0.5
-#       weight_max_vel_theta: 0.5
-#       weight_acc_lim_x: 0.5
-#       weight_acc_lim_theta: 10.5
-#       weight_kinematics_nh: 1000.0
-#       weight_kinematics_forward_drive: 3.0
-#       weight_kinematics_turning_radius: 1.0
-#       weight_optimaltime: 1.0 # must be > 0
-#       weight_shortest_path: 0.0
-#       weight_obstacle: 100.0
-#       weight_inflation: 0.2
-#       weight_dynamic_obstacle: 10.0 # not in use yet
-#       weight_dynamic_obstacle_inflation: 0.2
-#       weight_viapoint: 50.0
-#       weight_adapt_factor: 2.0
-
-#       # Homotopy Class Planner
-
-#       enable_homotopy_class_planning: True
-#       enable_multithreading: True
-#       max_number_classes: 4
-#       selection_cost_hysteresis: 5.0
-#       selection_prefer_initial_plan: 1.0
-#       selection_obst_cost_scale: 1.0
-#       selection_alternative_time_cost: True
-
-#       roadmap_graph_no_samples: 15
-#       roadmap_graph_area_width: 5.0
-#       roadmap_graph_area_length_scale: 1.0
-#       h_signature_prescaler: 0.5
-#       h_signature_threshold: 0.1
-#       obstacle_heading_threshold: 0.45
-#       switching_blocking_period: 0.0
-#       viapoints_all_candidates: True
-#       delete_detours_backwards: True
-#       max_ratio_detours_duration_best_duration: 3.0
-#       visualize_hc_graph: False
-#       visualize_with_time_as_z_axis_scale: 0.0
-
-#       # Recovery
-
-#       shrink_horizon_backup: True
-#       shrink_horizon_min_duration: 10.0
-#       oscillation_recovery: True
-#       oscillation_v_eps: 0.1
-#       oscillation_omega_eps: 0.1
-#       oscillation_recovery_min_duration: 10.0
-#       oscillation_filter_duration: 10.0
+      - smoother_path_error_code
 
 controller_server:
   ros__parameters:
     use_sim_time: True
     controller_frequency: 2.0
-    min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 0.5
-    min_theta_velocity_threshold: 0.001
+    min_x_velocity_threshold: 0.1
+    min_y_velocity_threshold: 0.0
+    min_theta_velocity_threshold: 0.01
     failure_tolerance: 0.3
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
@@ -282,6 +143,7 @@ controller_server:
       regulated_linear_scaling_min_radius: 5.0 # the radius threshold for when speed scaling is triggered on turns
       regulated_linear_scaling_min_speed: 0.15 # The minimum speed (m/s) for which any of the regulated heuristics can send, to ensure process is still achievable even in high cost spaces with high curvature. Must be > 0.1.
       #Can't have both rotate to heading and allow reversing
+      
       use_rotate_to_heading: false # this can only be true on robots which rotate in place
       allow_reversing: false
       # max_robot_pose_search_dist: 30.0 - Leave this as default (max(local_costmap)/2)
@@ -327,8 +189,8 @@ local_costmap:
       inflation_layer:
         enabled: True
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 1.5 # Exponential decay factor across inflation radius.
-        inflation_radius: 2.0 # Radius to inflate costmap around lethal obstacles.
+        cost_scaling_factor: 4.0 # Exponential decay factor across inflation radius.
+        inflation_radius: 6.0 # Radius to inflate costmap around lethal obstacles.
         inflate_unknown: True
         inflate_around_unknown: True
       always_send_full_costmap: True
@@ -364,8 +226,8 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.95
+        cost_scaling_factor: 4.0
+        inflation_radius: 10.0
       always_send_full_costmap: True
 
 map_server:
@@ -389,20 +251,33 @@ planner_server:
       # use_astar: False
       # allow_unknown: False
       plugin: "nav2_smac_planner/SmacPlannerHybrid"
-      tolerance: 1.5
-      downsample_costmap: False
-      downsampling_factor: 1
-      allow_unknown: True
-      max_iterations: 1000000
-      max_on_approach_iterations: 1000
-      max_planning_time: 5.0
-      motion_model_for_search: "REEDS_SHEPP"
-      cost_travel_multiplier: 2.0
-      use_final_approach_orientation: False
+      downsample_costmap: false           # whether or not to downsample the map
+      downsampling_factor: 1              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
+      tolerance: 0.25                     # dist-to-goal heuristic cost (distance) for valid tolerance endpoints if exact goal cannot be found.
+      allow_unknown: true                 # allow traveling in unknown space
+      max_iterations: 1000000             # maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
+      max_on_approach_iterations: 1000    # Maximum number of iterations after within tolerances to continue to try to find exact solution
+      max_planning_time: 5.0              # max time in s for planner to plan, smooth
+      motion_model_for_search: "DUBIN"    # Hybrid-A* Dubin, Redds-Shepp
+      angle_quantization_bins: 72         # Number of angle bins for search
+      analytic_expansion_ratio: 3.5       # The ratio to attempt analytic expansions during search for final approach.
+      analytic_expansion_max_length: 3.0  # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting
+      minimum_turning_radius: 5.0        # minimum turning radius in m of path / vehicle
+      reverse_penalty: 2.0                # Penalty to apply if motion is reversing, must be => 1
+      change_penalty: 2.0                 # Penalty to apply if motion is changing directions (L to R), must be >= 0
+      non_straight_penalty: 1.8           # Penalty to apply if motion is non-straight, must be => 1
+      cost_penalty: 3.0                   # Penalty to apply to higher cost areas when adding into the obstacle map dynamic programming distance expansion heuristic. This drives the robot more towards the center of passages. A value between 1.3 - 3.5 is reasonable.
+      retrospective_penalty: 0.015
+      lookup_table_size: 20.0             # Size of the dubin/reeds-sheep distance window to cache, in meters.
+      cache_obstacle_heuristic: false     # Cache the obstacle map dynamic programming distance expansion heuristic between subsiquent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
+      smooth_path: True                   # If true, does a simple and quick smoothing post-processing to the path
+
       smoother:
         max_iterations: 1000
         w_smooth: 0.3
         w_data: 0.2
+        do_refinement: true
+        refinement_num: 2
         tolerance: 1.0e-10
 
 behavior_server:
@@ -426,7 +301,7 @@ behavior_server:
     robot_base_frame: base_link
     transform_tolerance: 0.1
     simulate_ahead_time: 2.0
-    max_rotational_vel: 1.0
+    max_rotational_vel: 5.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
 
@@ -519,11 +394,28 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [5.0, 0.0, 2.5]
-    min_velocity: [-0.5, 0.0, -2.5]
+    max_velocity: [1.0, 0.0, 10.5]
+    min_velocity: [-0.5, 0.0, -10.5]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
     max_accel: [2.5, 0.0, 3.2]
     max_decel: [-2.5, 0.0, -3.2]
     odom_topic: "odom"
     odom_duration: 0.1
+
+
+smoother_server:
+  ros__parameters:
+    costmap_topic: global_costmap/costmap_raw
+    footprint_topic: global_costmap/published_footprint
+    robot_base_frame: base_link
+    transform_timeout: 0.1
+    smoother_plugins: ["simple_smoother", "curvature_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      do_refinement: True
+    curvature_smoother:
+      plugin: "nav2_smoother::SavitzkyGolaySmoother"
+      do_refinement: True
+      refinement_num: 2
